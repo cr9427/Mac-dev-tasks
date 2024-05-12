@@ -1,0 +1,81 @@
+---
+# Configure systems firewall
+#
+- name: Checking firewall state
+  command:
+    argv:
+      - /usr/libexec/ApplicationFirewall/socketfilterfw
+      - --getglobalstate
+      - --getblockall
+      - --listapps
+      - --getallowsigned
+      - --getstealthmode
+      - --getloggingmode
+      - --getloggingopt
+  register: fw_state
+  changed_when: false
+  become: true
+
+- name: Activating firewall
+  command:
+    argv:
+      - /usr/libexec/ApplicationFirewall/socketfilterfw
+      - --setglobalstate
+      - "on"
+  when: "'Firewall is disabled' in fw_state.stdout"
+  become: yes
+
+- name: Changeing firewall block all mode to {{ firewall_blockall }}
+  command:
+    argv:
+      - /usr/libexec/ApplicationFirewall/socketfilterfw
+      - --setblockall
+      - "{{ firewall_blockall }}"
+  # when: "'Firewall is set to block all non-essential incoming connections' in fw_state.stdout"
+  become: true
+
+- name: Changing firewall incoming connection for signed built-in software to {{ firewall_allowsigned }}
+  command:
+    argv:
+      - /usr/libexec/ApplicationFirewall/socketfilterfw
+      - --setallowsigned
+      - "{{ firewall_allowsigned }}"
+  # when: "'Automatically allow signed built-in software ENABLED' in fw_state.stdout"
+  become: true
+
+- name: Changing firewall incoming connection for signed application to {{ firewall_allowsignedapp }}
+  command:
+    argv:
+      - /usr/libexec/ApplicationFirewall/socketfilterfw
+      - --setallowsignedapp
+      - "{{ firewall_allowsignedapp }}"
+  # when: "'Automatically allow downloaded signed software ENABLED' in fw_state.stdout"
+  become: true
+
+- name: Changing firewall stealth mode to {{ firewall_stealthmode }}
+  command:
+    argv:
+      - /usr/libexec/ApplicationFirewall/socketfilterfw
+      - --setstealthmode
+      - "{{ firewall_stealthmode }}"
+  # when: "'Stealth mode disabled' in fw_state.stdout"
+  become: true
+
+- name: Checking firewall state
+  command:
+    argv:
+      - /usr/libexec/ApplicationFirewall/socketfilterfw
+      - --getglobalstate
+      - --getblockall
+      - --listapps
+      - --getallowsigned
+      - --getstealthmode
+      - --getloggingmode
+      - --getloggingopt
+  register: fw_state
+  changed_when: false
+  become: true
+
+- name: Printing firewall configuration
+  debug:
+    msg: "{{ fw_state.stdout }}"
