@@ -1,0 +1,9 @@
+---
+# Configure systems firewall
+#
+- name: Disabling brew analytics
+  command:
+    argv:
+      - brew
+      - analytics
+      - "off"
